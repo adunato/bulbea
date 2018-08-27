@@ -35,6 +35,9 @@ from bulbea._util.const import (
     SHARE_ACCEPTED_SAVE_FORMATS
 )
 from bulbea._util.color import Color
+
+from alpha_vantage.timeseries import TimeSeries
+
 import bulbea as bb
 
 pplt.style.use(AppConfig.PLOT_STYLE)
@@ -156,7 +159,7 @@ class Share(Entity):
     Date
     2003-05-15  18.6  18.849999  18.470001  18.73  71248800.0        1.213325
     '''
-    def __init__(self, source, ticker, start = None, end = None, latest = None, cache = False):
+    def __init__(self, source, ticker, start = None, end = None, latest = None, cache = False, provider = "quandl"):
         _check_str(source, raise_err = True)
         _check_str(ticker, raise_err = True)
 
@@ -169,12 +172,13 @@ class Share(Entity):
         else:
             quandl.ApiConfig.api_key = os.getenv(envvar)
 
+        self.provider = provider
         self.source    = source
         self.ticker    = ticker
 
         self.update(start = start, end = end, latest = latest, cache = cache)
 
-    def update(self, start = None, end = None, latest = None, cache = False):
+    def updateQuandl(self, start = None, end = None, latest = None, cache = False):
         '''
         Update the share with the latest available data.
 
@@ -184,12 +188,36 @@ class Share(Entity):
         >>> share = bb.Share(source = 'YAHOO', ticker = 'AAPL')
         >>> share.update()
         '''
+
         self.data    = quandl.get('{database}/{code}'.format(
             database = self.source,
             code     = self.ticker
         ))
         self.length  =  len(self.data)
         self.attrs   = list(self.data.columns)
+
+    def updateAlphavantage(self, start = None, end = None, latest = None, cache = False):
+        '''
+        Update the share with the latest available data.
+
+        :Example:
+
+        >>> import bulbea as bb
+        >>> share = bb.Share(source = 'YAHOO', ticker = 'AAPL')
+        >>> share.update()
+        '''
+
+        ts = TimeSeries(key='PFCYHNQDBITBMDD5')
+        self.data, meta_data = ts.get_intraday(self.ticker)
+        self.length  =  len(self.data)
+        self.attrs   = 5
+
+
+    def update(self, start = None, end = None, latest = None, cache = False):
+        if self.provider == "quandl":
+            self.updateQuandl(start,end,latest,cache)
+        elif self.provider == "alphavantage":
+            self.updateAlphavantage(start,end,latest,cache)
 
     def __len__(self):
         '''
