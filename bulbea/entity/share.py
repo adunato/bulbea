@@ -231,6 +231,11 @@ class Share(Entity):
         '''
         return self.length
 
+    def groupDataByAttribute(self):
+        for x in range(len(self.data)):
+            self.data[x]
+
+
     def bollinger_bands(self,
                         attrs     = 'Close',
                         period    = 50,
