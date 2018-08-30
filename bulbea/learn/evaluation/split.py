@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 # imports - third-party packages
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 # module imports
@@ -22,7 +23,8 @@ def split(share,
           window    = 0.01,
           train     = 0.60,
           shift     = 1,
-          normalize = False):
+          normalize = False,
+          provider = 'quandl'):
     '''
     :param attrs: `str` or `list` of attribute names of a share, defaults to *Close* attribute
     :type attrs: :obj: `str`, :obj:`list`
@@ -36,7 +38,12 @@ def split(share,
     _validate_in_range(window, 0, 1, raise_err = True)
     _validate_in_range(train, 0, 1, raise_err = True)
 
-    data   = share.data[attrs]
+    if(provider == 'alphavantage'):
+        df = pd.DataFrame(share.data)
+        data = df.ix[3]
+        data = pd.to_numeric(data)
+    else:
+        data = share.data[attrs]
 
     length = len(share)
 

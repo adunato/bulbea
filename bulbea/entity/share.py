@@ -208,7 +208,7 @@ class Share(Entity):
         '''
 
         ts = TimeSeries(key='PFCYHNQDBITBMDD5')
-        self.data, meta_data = ts.get_intraday(self.ticker)
+        self.data, meta_data = ts.get_daily_adjusted(self.ticker, 'full')
         self.length  =  len(self.data)
         self.attrs   = 5
 
@@ -232,9 +232,8 @@ class Share(Entity):
         return self.length
 
     def groupDataByAttribute(self):
-        for x in range(len(self.data)):
-            self.data[x]
-
+        df = pd.DataFrame(self.data)
+        print(df)
 
     def bollinger_bands(self,
                         attrs     = 'Close',
